@@ -72,7 +72,7 @@ if __name__ == "__main__":
     motor = EV3Motor(port=OUTPUT_A, motor_type='large')
 
     print("Running motor at 50% speed for 2 seconds...")
-    motor.run_forever(speed=50)
+    motor.set_speed(50)
     time.sleep(2)
 
     print("Stopping motor with brake...")
