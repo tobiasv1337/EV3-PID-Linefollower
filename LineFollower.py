@@ -23,6 +23,24 @@ class LineFollower:
         self.running = False
         self.debug_mode = True
 
+        self.base_speed = 30  # Base speed for both motors
+        self.max_speed = 100  # Maximum allowed motor speed
+
+    def scale_motor_speeds(self, left_speed, right_speed):
+        max_current_speed = max(abs(left_speed), abs(right_speed))
+
+        # If the maximum exceeds the allowable speed, scale both speeds proportionally
+        if max_current_speed > self.max_speed:
+            scaling_factor = self.max_speed / max_current_speed
+            left_speed *= scaling_factor
+            right_speed *= scaling_factor
+
+        # Prevent issues due to rounding errors
+        left_speed = max(-self.max_speed, min(self.max_speed, left_speed))
+        right_speed = max(-self.max_speed, min(self.max_speed, right_speed))
+
+        return left_speed, right_speed
+
     def calibrate_sensor(self):
         self.sound.speak("Calibrate white")
         input("Place sensor on white and press Enter.")
@@ -75,6 +93,8 @@ class LineFollower:
                     base_speed = 30
                     left_speed = base_speed - correction
                     right_speed = base_speed + correction
+
+                    left_speed, right_speed = self.scale_motor_speeds(left_speed, right_speed)
 
                     self.left_motor.set_speed(left_speed)
                     self.right_motor.set_speed(right_speed)
