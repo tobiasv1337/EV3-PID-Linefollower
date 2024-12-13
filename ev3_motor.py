@@ -89,4 +89,4 @@ if __name__ == "__main__":
     motor.run_timed(time_ms=2000, speed=60)
 
     position = motor.get_position()
-    print(f"Current position: {position} degrees")
+    print("Current position: {} degrees".format(position))
