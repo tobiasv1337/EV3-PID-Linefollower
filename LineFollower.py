@@ -57,10 +57,14 @@ class LineFollower:
 
         # Draw sensor output as bars
         for i, value in enumerate(sensor_data):
-            bar_height = int((value / 255) * 64)  # Scale value to screen height
+            bar_height = int((value / 255) * 64)
             self.display.rectangle(
-                x=i * 20, y=64 - bar_height, width=18, height=bar_height, fill='white'
-            )
+            x=i * 20,
+            y=64 - bar_height,
+            width=18,
+            height=bar_height,
+            fill=True
+        )
 
         # Show calculated line position
         line_position = self.sensor.get_line_position()
