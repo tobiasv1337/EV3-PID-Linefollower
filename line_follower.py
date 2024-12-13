@@ -68,7 +68,7 @@ class LineFollower:
 
         # Show calculated line position
         line_position = self.sensor.get_line_position()
-        self.display.text_pixels(f"Line Pos: {line_position:.2f}", x=0, y=70, text_color='white')
+        self.display.text_pixels("Line Pos: {:.2f}.format(line_position)", x=0, y=70, text_color='white')
         self.display.update()
 
     def toggle_running_state(self):
