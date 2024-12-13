@@ -84,5 +84,5 @@ if __name__ == "__main__":
     # Read line position
     while True:
         position = sensor.get_line_position()
-        print(f"Line position: {position}")
+        print("Line position: {}".format(position))
         time.sleep(0.1)
