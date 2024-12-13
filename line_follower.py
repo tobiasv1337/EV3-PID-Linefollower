@@ -63,7 +63,7 @@ class LineFollower:
             x2 = x1 + 18
             y2 = 64
 
-            self.display.rectangle(x1, y1, x2, y2, fill=True)
+            self.display.rectangle(x1, y1, x2, y2)
 
         # Show calculated line position
         line_position = self.sensor.get_line_position()
