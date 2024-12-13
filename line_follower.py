@@ -58,17 +58,16 @@ class LineFollower:
         # Draw sensor output as bars
         for i, value in enumerate(sensor_data):
             bar_height = int((value / 255) * 64)
-            self.display.rectangle(
-            x=i * 20,
-            y=64 - bar_height,
-            width=18,
-            height=bar_height,
-            fill=True
-        )
+            x1 = i * 20
+            y1 = 64 - bar_height
+            x2 = x1 + 18
+            y2 = 64
+
+            self.display.rectangle(x1, y1, x2, y2, fill=True)
 
         # Show calculated line position
         line_position = self.sensor.get_line_position()
-        self.display.text_pixels("Line Pos: {:.2f}.format(line_position)", x=0, y=70, text_color='white')
+        self.display.text_pixels("Line Pos: {:.2f}".format(line_position), 0, 70)
         self.display.update()
 
     def toggle_running_state(self):
