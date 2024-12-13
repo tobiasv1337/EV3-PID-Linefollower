@@ -12,13 +12,9 @@ class LightArraySensor:
 
         :param port: Port where the sensor is connected (e.g., 'in1', 'in2').
         """
-        # Configure the sensor port
         self.port = LegoPort(address=port)
-        self.port.mode = 'i2c'
-        self.port.set_device = 'ms-light-array'
-        time.sleep(0.5)  # Allow the sensor to initialize
+        self.port.mode = 'nxt-i2c'
 
-        # Initialize the sensor
         self.sensor = Sensor(address=port)
 
     def calibrate_white(self):
