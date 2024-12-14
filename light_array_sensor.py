@@ -133,7 +133,7 @@ class LightArraySensor:
             return None  # No line detected
 
         line_position = weighted_sum / total
-        print(f"Line detected at position: {line_position:.2f}")
+        print(f"Line detected at position: %.2f" % line_position)
         return line_position
 
 
