@@ -128,15 +128,17 @@ class LightArraySensor:
         noise_threshold = 0.1 * (self.max_value ** 2)  # Example: 10% of max biased value
         filtered_data = [value if value > noise_threshold else 0 for value in biased_data]
 
-        weighted_sum = sum(value * (index + 1) for index, value in enumerate(filtered_data))
-        total = sum(filtered_data)
+        edge_weights = [2 if i in [0, len(filtered_data) - 1] else 1 for i in range(len(filtered_data))]
+        weighted_filtered_data = [filtered_data[i] * edge_weights[i] for i in range(len(filtered_data))]
+
+        weighted_sum = sum(value * (index + 1) for index, value in enumerate(weighted_filtered_data))
+        total = sum(weighted_filtered_data)
 
         if total == 0:
-            print("No significant line detected.")
             return None  # No line detected
 
         line_position = weighted_sum / total
-        print("Line detected at position: {}".format(line_position))
+        #print("Line detected at position: {}".format(line_position))
         return line_position
 
 

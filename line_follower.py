@@ -9,11 +9,16 @@ import time
 
 class LineFollower:
     def __init__(self):
+        # Constants
+        self.base_speed = 10  # Base speed for both motors
+        self.max_speed = 100  # Maximum allowed motor speed
+        self.scaling_factor = 1.0  # Internal variable for scaling motor speeds
+
         # Initialize components
         self.sensor = LightArraySensor(port='in1', flipped=True)
         self.left_motor = EV3Motor(port=OUTPUT_A, motor_type='large')
         self.right_motor = EV3Motor(port=OUTPUT_B, motor_type='large')
-        self.pid = PIDController(kp=4.0, ki=0.0, kd=2.0, setpoint=4.5, output_limits=(-50, 50))
+        self.pid = PIDController(kp=5.0, ki=0.0, kd=5.0, setpoint=4.5, output_limits=(-self.max_speed, self.max_speed))
 
         self.btn = Button()
         self.display = Display()
@@ -22,10 +27,6 @@ class LineFollower:
         # State variables
         self.running = False
         self.debug_mode = True
-
-        self.base_speed = 0  # Base speed for both motors
-        self.max_speed = 100  # Maximum allowed motor speed
-        self.scaling_factor = 1.0  # Internal variable for scaling motor speeds
 
         self.inverted_display = True
 
@@ -143,10 +144,12 @@ class LineFollower:
 
     def follow_line(self):
         try:
+            last_line_position = None
             while True:
                 self.handle_button_presses()
 
                 sensor_data = self.sensor.read_data()
+                line_position = self.sensor.get_line_position()
 
                 if self.debug_mode:
                     self.debug_visualization(sensor_data)
@@ -156,11 +159,16 @@ class LineFollower:
                         print("Skipping control update due to invalid sensor data.")
                         continue
 
-                    line_position = self.sensor.get_line_position()
                     if line_position is None:
-                        print("Halting due to invalid or missing line position.")
-                        self.left_motor.stop()
-                        self.right_motor.stop()
+                        if last_line_position is not None:
+                            if last_line_position < 4.5:
+                                print("Tracking lost. Trying to recover to the left.")
+                                self.left_motor.set_speed(self.base_speed)
+                                self.right_motor.set_speed(-self.base_speed)
+                            else:
+                                print("Tracking lost. Trying to recover to the right.")
+                                self.left_motor.set_speed(-self.base_speed)
+                                self.right_motor.set_speed(self.base_speed)
                         continue
 
                     correction = self.pid.compute(line_position)
@@ -176,7 +184,8 @@ class LineFollower:
                     self.left_motor.stop()
                     self.right_motor.stop()
 
-                time.sleep(0.01)
+                last_line_position = line_position
+                #time.sleep(0.01)
         except KeyboardInterrupt:
             self.left_motor.stop()
             self.right_motor.stop()
