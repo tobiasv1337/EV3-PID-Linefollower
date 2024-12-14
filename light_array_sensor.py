@@ -87,7 +87,7 @@ class LightArraySensor:
         raw_data = struct.unpack(struct_fmt, raw)
 
         print("Unpacked sensor data ({}): {}".format(struct_fmt, raw_data))
-        return raw_data
+        return raw_data[:8]  # Discard the last 8 bytes if in CAL mode
 
     def get_line_position(self):
         """
