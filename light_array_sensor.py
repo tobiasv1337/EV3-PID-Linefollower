@@ -101,11 +101,13 @@ class LightArraySensor:
 
         raw_data = struct.unpack(struct_fmt, raw)
 
+        raw_data = raw_data[:8]  # Discard the last 8 bytes if in CAL mode
+
         if self.flipped:
             raw_data = raw_data[::-1]
 
         print("Unpacked sensor data ({}): {}".format(struct_fmt, raw_data))
-        return raw_data[:8]  # Discard the last 8 bytes if in CAL mode
+        return raw_data
 
     def get_line_position(self):
         """
