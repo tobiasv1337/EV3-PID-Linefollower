@@ -115,9 +115,17 @@ class LineFollower:
                 self.sound.speak("Raw sensor data mode enabled")
             time.sleep(0.5)  # Debounce
 
+    def manual_calibration(self):
+        if self.btn.down:
+            self.sound.speak("Entering manual calibration mode.")
+            self.sensor.calibrate()
+            self.sound.speak("Manual calibration complete.")
+            time.sleep(0.5)  # Debounce
+
     def handle_button_presses(self):
         self.toggle_running_state()
         self.toggle_sensor_mode()
+        self.manual_calibration()
 
     def follow_line(self):
         try:
