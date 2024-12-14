@@ -13,14 +13,25 @@ class LightArraySensor:
         Initialize the Light Sensor Array.
         :param port: Port where the sensor is connected (e.g., 'in1', 'in2').
         """
+        self.sound = Sound()
+
         self.port = LegoPort(address=port)
         self.port.mode = 'nxt-i2c'
 
-        self.sensor = Sensor(address=port)
-        self.mode = "RAW" # The library is broken, thus we need to initialize with RAW mode
-        self.sensor.mode = self.mode
+        self.sensor = None
+        for _ in range(10):
+            try:
+                self.sensor = Sensor(address=port)
+                self.mode = "RAW" # The library is broken, thus we need to initialize with RAW mode
+                self.sensor.mode = self.mode
+                print("Sensor initialized in CAL mode")
+                break
+            except PermissionError:
+                print("PermissionError during initialization. Retrying...")
+                time.sleep(1)
 
-        self.sound = Sound()
+        if self.sensor is None:
+            raise RuntimeError("Failed to initialize the sensor after 10 retries")
 
     def calibrate_white(self):
         self.sensor.command = 'CAL-WHITE'
@@ -48,11 +59,12 @@ class LightArraySensor:
         self.sensor.command = 'SLEEP'
 
     def wake(self):
-        try:
-            self.sensor.command = 'WAKE'
-        except Exception as e:
-            time.sleep(0.1)
-            self.wake()
+        while True:
+            try:
+                self.sensor.command = 'WAKE'
+                break
+            except Exception as e:
+                time.sleep(0.1)
 
     def set_mode(self, mode):
         if mode not in ["CAL", "RAW"]:
