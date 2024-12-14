@@ -9,13 +9,13 @@ class LightArraySensor:
     def __init__(self, port='in1'):
         """
         Initialize the Light Sensor Array.
-
         :param port: Port where the sensor is connected (e.g., 'in1', 'in2').
         """
         self.port = LegoPort(address=port)
         self.port.mode = 'nxt-i2c'
 
         self.sensor = Sensor(address=port)
+        self.mode = "CAL"
 
     def calibrate_white(self):
         self.sensor.command = 'CAL-WHITE'
@@ -33,26 +33,28 @@ class LightArraySensor:
         self.sensor.command = 'SLEEP'
 
     def wake(self):
-        """Wake the sensor up."""
         self.sensor.command = 'WAKE'
 
-    def read_raw(self):
-        """
-        Read the raw data from the sensor.
+    def set_mode(self, mode):
+        if mode not in ["CAL", "RAW"]:
+            raise ValueError("Invalid mode. Use 'CAL' or 'RAW'.")
+        self.mode = mode
 
+    def read_data(self):
+        """
+        Read the data from the sensor based on the current mode.
         :return: A list of 8 values representing the light intensity from each sensor element.
         """
-        return self.sensor.bin_data('B'*8)
+        return self.sensor.bin_data('B' * 8)
 
     def get_line_position(self):
         """
-        Calculate the position of the line relative to the sensor.
-
+        Calculate the position of the line relative to the sensor based on the current mode.
         :return: A float representing the line position (weighted average).
         """
-        raw_data = self.read_raw()
-        weighted_sum = sum(value * (index + 1) for index, value in enumerate(raw_data))
-        total = sum(raw_data)
+        data = self.read_data()
+        weighted_sum = sum(value * (index + 1) for index, value in enumerate(data))
+        total = sum(data)
         if total == 0:
             return 0  # Avoid division by zero
         return weighted_sum / total
