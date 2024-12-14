@@ -106,7 +106,7 @@ class LightArraySensor:
         if self.flipped:
             raw_data = raw_data[::-1]
 
-        print("Unpacked sensor data ({}): {}".format(struct_fmt, raw_data))
+        #print("Unpacked sensor data ({}): {}".format(struct_fmt, raw_data))
         return raw_data
 
     def get_line_position(self):

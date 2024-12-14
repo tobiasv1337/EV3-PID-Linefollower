@@ -13,7 +13,7 @@ class LineFollower:
         self.sensor = LightArraySensor(port='in1', flipped=True)
         self.left_motor = EV3Motor(port=OUTPUT_A, motor_type='large')
         self.right_motor = EV3Motor(port=OUTPUT_B, motor_type='large')
-        self.pid = PIDController(kp=1.2, ki=0.01, kd=0.2, setpoint=4.5, output_limits=(-50, 50))
+        self.pid = PIDController(kp=4.0, ki=0.0, kd=1.0, setpoint=4.5, output_limits=(-50, 50))
 
         self.btn = Button()
         self.display = Display()
@@ -23,9 +23,11 @@ class LineFollower:
         self.running = False
         self.debug_mode = True
 
-        self.base_speed = 30  # Base speed for both motors
+        self.base_speed = 0  # Base speed for both motors
         self.max_speed = 100  # Maximum allowed motor speed
         self.scaling_factor = 1.0  # Internal variable for scaling motor speeds
+
+        self.inverted_display = True
 
     def scale_motor_speeds(self, left_speed, right_speed):
         max_current_speed = max(abs(left_speed), abs(right_speed))
@@ -67,16 +69,26 @@ class LineFollower:
             normalized_value = max(0, min(value, self.sensor.max_value))  # Clamp to [0, max_value]
             bar_height = int(((self.sensor.max_value - normalized_value) / self.sensor.max_value) * max_bar_height)
 
-            x1 = i * bar_width
+            if self.inverted_display:
+                x1 = screen_width - ((i + 1) * bar_width)
+                x2 = x1 + bar_width - 2
+            else:
+                x1 = i * bar_width
+                x2 = x1 + bar_width - 2
+            
             y1 = screen_height // 2 - bar_height
-            x2 = x1 + bar_width - 2
             y2 = screen_height // 2
 
             self.display.draw.rectangle((x1, screen_height // 2 - max_bar_height, x2, y2), outline='black')
             self.display.draw.rectangle((x1, y1, x2, y2), fill='black')
 
         line_position = self.sensor.get_line_position()
-        line_x = int((line_position / num_sensors) * screen_width)
+
+        if self.inverted_display:
+            line_x = screen_width - int((line_position / num_sensors) * screen_width)
+        else:
+            line_x = int((line_position / num_sensors) * screen_width)
+
         self.display.draw.line((line_x, 0, line_x, max_bar_height), fill='black', width=2)
 
         self.display.draw.text((5, 66), "Mode: {} | State: {}".format(
@@ -149,8 +161,8 @@ class LineFollower:
 
                     correction = self.pid.compute(line_position)
 
-                    left_speed = self.base_speed - correction
-                    right_speed = self.base_speed + correction
+                    left_speed = self.base_speed + correction
+                    right_speed = self.base_speed - correction
 
                     left_speed, right_speed = self.scale_motor_speeds(left_speed, right_speed)
 
