@@ -137,10 +137,20 @@ class LineFollower:
             self.sound.speak("Manual calibration complete.")
             time.sleep(0.5)  # Debounce
 
+    def toggle_debug_mode(self):
+        if self.btn.left:
+            self.debug_mode = not self.debug_mode
+            if self.debug_mode:
+                self.sound.speak("Debug mode enabled")
+            else:
+                self.sound.speak("Debug mode disabled")
+            time.sleep(0.5)  # Debounce
+
     def handle_button_presses(self):
         self.toggle_running_state()
         self.toggle_sensor_mode()
         self.manual_calibration()
+        self.toggle_debug_mode()
 
     def follow_line(self):
         try:
