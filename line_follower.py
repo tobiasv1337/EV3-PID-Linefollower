@@ -35,23 +35,14 @@ class LineFollower:
             self.scaling_factor = self.max_speed / max_current_speed
             left_speed *= self.scaling_factor
             right_speed *= self.scaling_factor
+        else:
+            self.scaling_factor = 1.0
 
         # Prevent issues due to rounding errors
         left_speed = max(-self.max_speed, min(self.max_speed, left_speed))
         right_speed = max(-self.max_speed, min(self.max_speed, right_speed))
 
         return left_speed, right_speed
-
-    def calibrate_sensor(self):
-        self.sound.speak("Calibrate white")
-        input("Place sensor on white and press Enter.")
-        self.sensor.calibrate_white()
-
-        self.sound.speak("Calibrate black")
-        input("Place sensor on black and press Enter.")
-        self.sensor.calibrate_black()
-
-        self.sound.speak("Calibration complete")
 
     def debug_visualization(self, sensor_data):
         self.display.clear()
@@ -79,16 +70,15 @@ class LineFollower:
         line_x = int((line_position / num_sensors) * screen_width)
         self.display.draw.line((line_x, 0, line_x, max_bar_height), fill='black', width=2)
 
-        self.display.draw.text((5, 70), "State: %s | Kp: %.2f Ki: %.2f Kd: %.2f" %
-                            ("Run" if self.running else "Stop", self.pid.kp, self.pid.ki, self.pid.kd), fill='black')
-
-        self.display.draw.text((5, 85), "Line Pos: %.2f" % line_position, fill='black')
+        self.display.draw.text((5, 55), "Sensor Mode: {}".format(self.sensor.mode), fill='black')
+        self.display.draw.text((5, 70), "State: {} | Kp: {:.2f} Ki: {:.2f} Kd: {:.2f}".format(
+            "Run" if self.running else "Stop", self.pid.kp, self.pid.ki, self.pid.kd), fill='black')
+        self.display.draw.text((5, 85), "Line Pos: {:.2f}".format(line_position), fill='black')
 
         left_motor_speed = self.left_motor.motor.speed  # Directly read motor speed from ev3dev2
         right_motor_speed = self.right_motor.motor.speed
-        self.display.draw.text((5, 100), "L: %d R: %d" % (left_motor_speed, right_motor_speed), fill='black')
-
-        self.display.draw.text((5, 115), "Scaling: %.2f" % self.scaling_factor, fill='black')
+        self.display.draw.text((5, 100), "L: {} R: {}".format(left_motor_speed, right_motor_speed), fill='black')
+        self.display.draw.text((5, 115), "Scaling: {:.2f}".format(self.scaling_factor), fill='black')
 
         self.display.update()
 
@@ -100,13 +90,27 @@ class LineFollower:
             else:
                 self.sound.speak("Line following disabled")
             time.sleep(0.5)  # Debounce
+    
+    def toggle_running_state(self):
+        if self.btn.up:
+            new_mode = "RAW" if self.sensor.mode == "CAL" else "CAL"
+            self.sensor.set_mode(new_mode)
+            if new_mode == "CAL":
+                self.sound.speak("Calibration mode enabled")
+            else:
+                self.sound.speak("Raw sensor data mode enabled")
+            time.sleep(0.5)  # Debounce
+
+    def handle_button_presses(self):
+        self.toggle_running_state()
+        self.toggle_sensor_mode()
 
     def follow_line(self):
         try:
             while True:
-                self.toggle_running_state()
+                self.handle_button_presses()
 
-                sensor_data = self.sensor.read_raw()
+                sensor_data = self.sensor.read_data()
 
                 if self.debug_mode:
                     self.debug_visualization(sensor_data)
@@ -115,9 +119,8 @@ class LineFollower:
                     line_position = self.sensor.get_line_position()
                     correction = self.pid.compute(line_position)
 
-                    base_speed = 30
-                    left_speed = base_speed - correction
-                    right_speed = base_speed + correction
+                    left_speed = self.base_speed - correction
+                    right_speed = self.base_speed + correction
 
                     left_speed, right_speed = self.scale_motor_speeds(left_speed, right_speed)
 
