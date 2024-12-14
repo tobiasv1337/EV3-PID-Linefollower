@@ -26,7 +26,7 @@ class LightArraySensor:
     def calibrate_black(self):
         self.sensor.command = 'CAL-BLACK'
 
-    def calibrate_sensor(self):
+    def calibrate(self):
         self.sound.speak("Calibrate white")
         input("Place sensor on white and press Enter.")
         self.calibrate_white()
@@ -79,15 +79,7 @@ if __name__ == "__main__":
 
     # Calibrate the sensor
     print("Calibrating the sensor...")
-    print("Place the sensor over a white surface within 5 seconds.")
-    time.sleep(5)
-    sensor.calibrate_white()
-    print("Sucessfully calibrated white.")
-    print("Place the sensor over a black surface within 5 seconds.")
-    time.sleep(5)
-    sensor.calibrate_black()
-    time.sleep(1)
-    print("Sucessfully calibrated black.")
+    sensor.calibrate()
     print("Calibration complete.")
 
     # Set frequency mode to 'UNIVERSAL'
