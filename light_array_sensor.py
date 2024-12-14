@@ -120,8 +120,12 @@ class LightArraySensor:
             print("Invalid data received. Unable to calculate line position.")
             return None # Propagate the error
 
-        weighted_sum = sum((self.max_value - value) * (index + 1) for index, value in enumerate(data))
-        total = sum(data)
+        # Calculate the inverted data so that low values (black) are weighted more heavily
+        inverted_data = [self.max_value - value for value in data]
+
+        weighted_sum = sum(value * (index + 1) for index, value in enumerate(inverted_data))
+        total = sum(inverted_data)
+
         if total == 0:
             return 0.0  # Avoid division by zero
         return weighted_sum / total
