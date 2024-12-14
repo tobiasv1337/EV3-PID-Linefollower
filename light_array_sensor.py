@@ -88,13 +88,17 @@ class LightArraySensor:
     def get_line_position(self):
         """
         Calculate the position of the line relative to the sensor based on the current mode.
-        :return: A float representing the line position (weighted average).
+        :return: A float representing the line position (weighted average) or None if invalid data.
         """
         data = self.read_data()
+        if data is None:
+            print("Invalid data received. Unable to calculate line position.")
+            return None # Propagate the error
+
         weighted_sum = sum(value * (index + 1) for index, value in enumerate(data))
         total = sum(data)
         if total == 0:
-            return 0  # Avoid division by zero
+            return 0.0  # Avoid division by zero
         return weighted_sum / total
 
 
