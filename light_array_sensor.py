@@ -2,6 +2,7 @@ from ev3dev2.sensor import Sensor
 from ev3dev2.port import LegoPort
 from ev3dev2.sound import Sound
 import time
+import struct
 
 class LightArraySensor:
     """
@@ -17,6 +18,7 @@ class LightArraySensor:
 
         self.sensor = Sensor(address=port)
         self.mode = "CAL"
+        self.sensor.mode = self.mode
 
         self.sound = Sound()
 
@@ -53,13 +55,35 @@ class LightArraySensor:
         if mode not in ["CAL", "RAW"]:
             raise ValueError("Invalid mode. Use 'CAL' or 'RAW'.")
         self.mode = mode
+        self.sensor.mode = mode
 
     def read_data(self):
         """
-        Read the data from the sensor based on the current mode.
-        :return: A list of 8 values representing the light intensity from each sensor element.
+        Read the raw data from the sensor based on its current format.
+        :return: Null if the data is invalid, otherwise a list of values for each light sensor element.
         """
-        return self.sensor.bin_data('B' * 8)
+        # Map bin_data_format to struct format and size
+        fmt_map = {
+            'u8': ('8B', 8),   # 8 unsigned 8-bit integers
+            's16': ('8h', 16), # 8 signed 16-bit integers (RAW mode)
+        }
+
+        fmt = self.sensor.bin_data_format
+        if fmt not in fmt_map:
+            raise ValueError("Unsupported bin_data_format: {}".format(fmt))
+
+        struct_fmt, expected_length = fmt_map[fmt]
+        raw = self.sensor.bin_data()
+
+        if len(raw) != expected_length:
+            print("WARNING: Expected {} bytes, but got {} bytes. Discarding invalid data.".format(
+                expected_length, len(raw)))
+            return None
+
+        raw_data = struct.unpack(struct_fmt, raw)
+
+        print("Unpacked sensor data ({}): {}".format(struct_fmt, raw_data))
+        return raw_data
 
     def get_line_position(self):
         """
