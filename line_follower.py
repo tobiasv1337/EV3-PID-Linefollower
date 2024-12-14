@@ -70,15 +70,20 @@ class LineFollower:
         line_x = int((line_position / num_sensors) * screen_width)
         self.display.draw.line((line_x, 0, line_x, max_bar_height), fill='black', width=2)
 
-        self.display.draw.text((5, 55), "Sensor Mode: {}".format(self.sensor.mode), fill='black')
-        self.display.draw.text((5, 70), "State: {} | Kp: {:.2f} Ki: {:.2f} Kd: {:.2f}".format(
-            "Run" if self.running else "Stop", self.pid.kp, self.pid.ki, self.pid.kd), fill='black')
-        self.display.draw.text((5, 85), "Line Pos: {:.2f}".format(line_position), fill='black')
+        self.display.draw.text((5, 66), "Mode: {} | State: {}".format(
+            self.sensor.mode,
+            "Run" if self.running else "Stop"), fill='black')
 
-        left_motor_speed = self.left_motor.motor.speed  # Directly read motor speed from ev3dev2
+        self.display.draw.text((5, 80), "Kp: {:.2f} Ki: {:.2f} Kd: {:.2f}".format(self.pid.kp, self.pid.ki, self.pid.kd), fill='black')
+
+        self.display.draw.text((5, 94), "Line Pos: {:.2f}".format(line_position), fill='black')
+
+        left_motor_speed = self.left_motor.motor.speed
         right_motor_speed = self.right_motor.motor.speed
-        self.display.draw.text((5, 100), "L: {} R: {}".format(left_motor_speed, right_motor_speed), fill='black')
-        self.display.draw.text((5, 115), "Scaling: {:.2f}".format(self.scaling_factor), fill='black')
+        self.display.draw.text((5, 108), "L: {} R: {} | Scale: {:.2f}".format(
+            left_motor_speed,
+            right_motor_speed,
+            self.scaling_factor), fill='black')
 
         self.display.update()
 
