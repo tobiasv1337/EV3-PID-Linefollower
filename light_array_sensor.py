@@ -125,8 +125,11 @@ class LightArraySensor:
 
         biased_data = [value ** 2 for value in inverted_data] # Square the values to increase the contrast
 
-        weighted_sum = sum(value * (index + 1) for index, value in enumerate(biased_data))
-        total = sum(biased_data)
+        noise_threshold = 0.1 * (self.max_value ** 2)  # Example: 10% of max biased value
+        filtered_data = [value if value > noise_threshold else 0 for value in biased_data]
+
+        weighted_sum = sum(value * (index + 1) for index, value in enumerate(filtered_data))
+        total = sum(filtered_data)
 
         if total == 0:
             print("No significant line detected.")

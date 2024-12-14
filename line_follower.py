@@ -13,7 +13,7 @@ class LineFollower:
         self.sensor = LightArraySensor(port='in1', flipped=True)
         self.left_motor = EV3Motor(port=OUTPUT_A, motor_type='large')
         self.right_motor = EV3Motor(port=OUTPUT_B, motor_type='large')
-        self.pid = PIDController(kp=4.0, ki=0.0, kd=1.0, setpoint=4.5, output_limits=(-50, 50))
+        self.pid = PIDController(kp=4.0, ki=0.0, kd=2.0, setpoint=4.5, output_limits=(-50, 50))
 
         self.btn = Button()
         self.display = Display()
