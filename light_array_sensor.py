@@ -24,9 +24,7 @@ class LightArraySensor:
                 self.sensor = Sensor(address=port)
                 self.mode = "RAW" # The library is broken, thus we need to initialize with RAW mode
                 self.sensor.mode = self.mode
-                self.mode = "CAL"  # Switch to CAL mode
-                self.sensor.mode = self.mode
-                print("Sensor initialized in CAL mode")
+                print("Sensor initialized in RAW mode")
                 break
             except PermissionError:
                 print("PermissionError during initialization. Retrying...")
