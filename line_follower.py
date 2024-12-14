@@ -63,10 +63,7 @@ class LineFollower:
         bar_width = screen_width // num_sensors
         max_bar_height = 64  # Half of the screen height reserved for sensor bars
 
-        if self.sensor.mode == "CAL":
-            max_value = 100  # CAL mode returns percent [0, 100]
-        elif self.sensor.mode == "RAW":
-            max_value = 32767  # Maximum for s16 (unsigned scaling)
+        max_value = 100  # CAL is in percentage, RAW seems to be too, but is not documented
 
         for i, value in enumerate(sensor_data):
             normalized_value = max(0, min(value, max_value))  # Clamp to [0, max_value]
