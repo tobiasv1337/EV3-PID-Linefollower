@@ -28,6 +28,8 @@ class LineFollower:
         self.running = False
         self.debug_mode = True
 
+        self.loop_frequency = 0.0
+
         self.inverted_display = True
 
     def scale_motor_speeds(self, left_speed, right_speed):
@@ -76,7 +78,7 @@ class LineFollower:
             else:
                 x1 = i * bar_width
                 x2 = x1 + bar_width - 2
-            
+
             y1 = screen_height // 2 - bar_height
             y2 = screen_height // 2
 
@@ -90,11 +92,11 @@ class LineFollower:
                 line_x = screen_width - int((line_position / num_sensors) * screen_width)
             else:
                 line_x = int((line_position / num_sensors) * screen_width)
-            
+
             self.display.draw.line((line_x, 0, line_x, max_bar_height), fill='black', width=2)
-            self.display.draw.text((5, 94), "Line Pos: {:.2f}".format(line_position), fill='black')
+            self.display.draw.text((5, 94), "Line Pos: {:.2f} | Freq: {:.1f} Hz".format(line_position, self.loop_frequency), fill='black')
         else:
-            self.display.draw.text((5, 94), "Line Pos: N/A", fill='black')
+            self.display.draw.text((5, 94), "Line Pos: N/A | Freq: {:.1f} Hz".format(self.loop_frequency), fill='black')
 
         self.display.draw.text((5, 66), "Mode: {} | State: {}".format(
             self.sensor.mode,
@@ -155,11 +157,22 @@ class LineFollower:
     def follow_line(self):
         try:
             last_line_position = None
+            loop_start_time = time.time()
+            loop_counter = 0
+
             while True:
                 self.handle_button_presses()
 
                 sensor_data = self.sensor.read_data()
                 line_position = self.sensor.get_line_position()
+
+                loop_counter += 1
+
+                elapsed_time = time.time() - loop_start_time
+                if elapsed_time >= 1.0:  # Update frequency every second
+                    self.loop_frequency = loop_counter / elapsed_time
+                    loop_start_time = time.time()
+                    loop_counter = 0
 
                 if self.debug_mode:
                     self.debug_visualization(sensor_data)
