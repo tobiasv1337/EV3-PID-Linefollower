@@ -101,7 +101,7 @@ class LightArraySensor:
 
         raw_data = struct.unpack(struct_fmt, raw)
 
-        if self.flip_orientation:
+        if self.flipped:
             raw_data = raw_data[::-1]
 
         print("Unpacked sensor data ({}): {}".format(struct_fmt, raw_data))
