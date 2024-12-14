@@ -170,6 +170,6 @@ class LineFollower:
 if __name__ == "__main__":
     follower = LineFollower()
 
-    #follower.sensor.calibrate()
+    follower.sensor.calibrate()
 
     follower.follow_line()

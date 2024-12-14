@@ -17,7 +17,7 @@ class LightArraySensor:
         self.port.mode = 'nxt-i2c'
 
         self.sensor = Sensor(address=port)
-        self.mode = "CAL"
+        self.mode = "RAW" # The library is broken, thus we need to initialize with RAW mode
         self.sensor.mode = self.mode
 
         self.sound = Sound()
@@ -45,17 +45,21 @@ class LightArraySensor:
         self.sensor.command = mode
 
     def sleep(self):
-        self.sensor.poll_ms = 0  # Required before putting the sensor to sleep
         self.sensor.command = 'SLEEP'
 
     def wake(self):
-        self.sensor.command = 'WAKE'
+        try:
+            self.sensor.command = 'WAKE'
+        except Exception as e:
+            time.sleep(0.1)
+            self.wake()
 
     def set_mode(self, mode):
         if mode not in ["CAL", "RAW"]:
             raise ValueError("Invalid mode. Use 'CAL' or 'RAW'.")
         self.mode = mode
         self.sensor.mode = mode
+        print("Sensor mode set to: {}".format(mode))
 
     def read_data(self):
         """
@@ -64,8 +68,8 @@ class LightArraySensor:
         """
         # Map bin_data_format to struct format and size
         fmt_map = {
-            'u8': ('8B', 8),   # 8 unsigned 8-bit integers
-            's16': ('8h', 16), # 8 signed 16-bit integers (RAW mode)
+            'u8': ('16B', 16),   # Should be: 8 unsigned 8-bit integers (CAL mode). But the library is broken and thus to support both modes, we init the sensor in RAW mode and when switching to CAL mode, we get 16 bytes instead of 8 and discard the last 8 bytes.
+            's16': ('8h', 16),   # 8 signed 16-bit integers (RAW mode)
         }
 
         fmt = self.sensor.bin_data_format
