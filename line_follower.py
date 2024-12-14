@@ -158,7 +158,9 @@ class LineFollower:
 
                     line_position = self.sensor.get_line_position()
                     if line_position is None:
-                        print("Skipping control update due to invalid line position.")
+                        print("Halting due to invalid or missing line position.")
+                        self.left_motor.stop()
+                        self.right_motor.stop()
                         continue
 
                     correction = self.pid.compute(line_position)
