@@ -45,17 +45,32 @@ class LineFollower:
         return left_speed, right_speed
 
     def debug_visualization(self, sensor_data):
+        """
+        Visualize sensor data and relevant system information on the EV3 display.
+        Handles None values and adjusts for RAW/CAL scaling differences.
+        """
         self.display.clear()
 
         screen_width = 178
         screen_height = 128
 
+        if sensor_data is None:
+            self.display.draw.text((5, 10), "Invalid sensor data", fill='black')
+            self.display.update()
+            return
+
         num_sensors = len(sensor_data)
         bar_width = screen_width // num_sensors
         max_bar_height = 64  # Half of the screen height reserved for sensor bars
 
+        if self.sensor.mode == "CAL":
+            max_value = 255  # Maximum for u8
+        elif self.sensor.mode == "RAW":
+            max_value = 32767  # Maximum for s16 (unsigned scaling)
+
         for i, value in enumerate(sensor_data):
-            bar_height = int((value / 255) * max_bar_height)
+            normalized_value = max(0, min(value, max_value))  # Clamp to [0, max_value]
+            bar_height = int((normalized_value / max_value) * max_bar_height)
 
             x1 = i * bar_width
             y1 = screen_height // 2 - bar_height
@@ -63,7 +78,6 @@ class LineFollower:
             y2 = screen_height // 2
 
             self.display.draw.rectangle((x1, screen_height // 2 - max_bar_height, x2, y2), outline='black')
-
             self.display.draw.rectangle((x1, y1, x2, y2), fill='black')
 
         line_position = self.sensor.get_line_position()
