@@ -1,5 +1,6 @@
 from ev3dev2.sensor import Sensor
 from ev3dev2.port import LegoPort
+from ev3dev2.sound import Sound
 import time
 
 class LightArraySensor:
@@ -17,11 +18,24 @@ class LightArraySensor:
         self.sensor = Sensor(address=port)
         self.mode = "CAL"
 
+        self.sound = Sound()
+
     def calibrate_white(self):
         self.sensor.command = 'CAL-WHITE'
 
     def calibrate_black(self):
         self.sensor.command = 'CAL-BLACK'
+
+    def calibrate_sensor(self):
+        self.sound.speak("Calibrate white")
+        input("Place sensor on white and press Enter.")
+        self.calibrate_white()
+
+        self.sound.speak("Calibrate black")
+        input("Place sensor on black and press Enter.")
+        self.calibrate_black()
+
+        self.sound.speak("Calibration complete")
 
     def set_frequency(self, mode):
         if mode not in ['50HZ', '60HZ', 'UNIVERSAL']:
