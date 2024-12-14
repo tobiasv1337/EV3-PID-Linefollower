@@ -64,7 +64,7 @@ class LineFollower:
         max_bar_height = 64  # Half of the screen height reserved for sensor bars
 
         if self.sensor.mode == "CAL":
-            max_value = 255  # Maximum for u8
+            max_value = 100  # CAL mode returns percent [0, 100]
         elif self.sensor.mode == "RAW":
             max_value = 32767  # Maximum for s16 (unsigned scaling)
 
