@@ -91,7 +91,7 @@ class LineFollower:
                 self.sound.speak("Line following disabled")
             time.sleep(0.5)  # Debounce
     
-    def toggle_running_state(self):
+    def toggle_sensor_mode(self):
         if self.btn.up:
             new_mode = "RAW" if self.sensor.mode == "CAL" else "CAL"
             self.sensor.set_mode(new_mode)
