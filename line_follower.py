@@ -121,7 +121,15 @@ class LineFollower:
                     self.debug_visualization(sensor_data)
 
                 if self.running:
+                    if sensor_data is None:
+                        print("Skipping control update due to invalid sensor data.")
+                        continue
+
                     line_position = self.sensor.get_line_position()
+                    if line_position is None:
+                        print("Skipping control update due to invalid line position.")
+                        continue
+
                     correction = self.pid.compute(line_position)
 
                     left_speed = self.base_speed - correction
@@ -148,6 +156,6 @@ class LineFollower:
 if __name__ == "__main__":
     follower = LineFollower()
 
-    follower.sensor.calibrate()
+    #follower.sensor.calibrate()
 
     follower.follow_line()
