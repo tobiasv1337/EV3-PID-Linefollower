@@ -25,15 +25,16 @@ class LineFollower:
 
         self.base_speed = 30  # Base speed for both motors
         self.max_speed = 100  # Maximum allowed motor speed
+        self.scaling_factor = 1.0  # Internal variable for scaling motor speeds
 
     def scale_motor_speeds(self, left_speed, right_speed):
         max_current_speed = max(abs(left_speed), abs(right_speed))
 
         # If the maximum exceeds the allowable speed, scale both speeds proportionally
         if max_current_speed > self.max_speed:
-            scaling_factor = self.max_speed / max_current_speed
-            left_speed *= scaling_factor
-            right_speed *= scaling_factor
+            self.scaling_factor = self.max_speed / max_current_speed
+            left_speed *= self.scaling_factor
+            right_speed *= self.scaling_factor
 
         # Prevent issues due to rounding errors
         left_speed = max(-self.max_speed, min(self.max_speed, left_speed))
@@ -55,19 +56,40 @@ class LineFollower:
     def debug_visualization(self, sensor_data):
         self.display.clear()
 
-        # Draw sensor output as bars
+        screen_width = 178
+        screen_height = 128
+
+        num_sensors = len(sensor_data)
+        bar_width = screen_width // num_sensors
+        max_bar_height = 64  # Half of the screen height reserved for sensor bars
+
         for i, value in enumerate(sensor_data):
-            bar_height = int((value / 255) * 64)
-            x1 = i * 20
-            y1 = 0
-            x2 = x1 + 18
-            y2 = bar_height
+            bar_height = int((value / 255) * max_bar_height)
 
-            self.display.rectangle(x1, y1, x2, y2)
+            x1 = i * bar_width
+            y1 = screen_height // 2 - bar_height
+            x2 = x1 + bar_width - 2
+            y2 = screen_height // 2
 
-        # Show calculated line position
+            self.display.draw.rectangle((x1, screen_height // 2 - max_bar_height, x2, y2), outline='black')
+
+            self.display.draw.rectangle((x1, y1, x2, y2), fill='black')
+
         line_position = self.sensor.get_line_position()
-        self.display.text_pixels("Line Pos: {:.2f}".format(line_position), 0, 10)
+        line_x = int((line_position / num_sensors) * screen_width)
+        self.display.draw.line((line_x, 0, line_x, max_bar_height), fill='black', width=2)
+
+        self.display.draw.text((5, 70), "State: %s | Kp: %.2f Ki: %.2f Kd: %.2f" %
+                            ("Run" if self.running else "Stop", self.pid.kp, self.pid.ki, self.pid.kd), fill='black')
+
+        self.display.draw.text((5, 85), "Line Pos: %.2f" % line_position, fill='black')
+
+        left_motor_speed = self.left_motor.motor.speed  # Directly read motor speed from ev3dev2
+        right_motor_speed = self.right_motor.motor.speed
+        self.display.draw.text((5, 100), "L: %d R: %d" % (left_motor_speed, right_motor_speed), fill='black')
+
+        self.display.draw.text((5, 115), "Scaling: %.2f" % self.scaling_factor, fill='black')
+
         self.display.update()
 
     def toggle_running_state(self):
