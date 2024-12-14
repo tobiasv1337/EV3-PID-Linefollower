@@ -10,7 +10,7 @@ import time
 class LineFollower:
     def __init__(self):
         # Initialize components
-        self.sensor = LightArraySensor(port='in1')
+        self.sensor = LightArraySensor(port='in1', flipped=True)
         self.left_motor = EV3Motor(port=OUTPUT_A, motor_type='large')
         self.right_motor = EV3Motor(port=OUTPUT_B, motor_type='large')
         self.pid = PIDController(kp=1.2, ki=0.01, kd=0.2, setpoint=4.5, output_limits=(-50, 50))
@@ -63,11 +63,9 @@ class LineFollower:
         bar_width = screen_width // num_sensors
         max_bar_height = 64  # Half of the screen height reserved for sensor bars
 
-        max_value = 100  # CAL is in percentage, RAW seems to be too, but is not documented
-
         for i, value in enumerate(sensor_data):
-            normalized_value = max(0, min(value, max_value))  # Clamp to [0, max_value]
-            bar_height = int((normalized_value / max_value) * max_bar_height)
+            normalized_value = max(0, min(value, self.sensor.max_value))  # Clamp to [0, max_value]
+            bar_height = int(((self.sensor.max_value - normalized_value) / self.sensor.max_value) * max_bar_height)
 
             x1 = i * bar_width
             y1 = screen_height // 2 - bar_height
@@ -167,6 +165,6 @@ class LineFollower:
 if __name__ == "__main__":
     follower = LineFollower()
 
-    follower.sensor.calibrate()
+    #follower.sensor.calibrate()
 
     follower.follow_line()

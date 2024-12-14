@@ -8,12 +8,15 @@ class LightArraySensor:
     """
     A class to interact with the Mindsensors Light Sensor Array (ms-light-array) on ev3dev.
     """
-    def __init__(self, port='in1'):
+    def __init__(self, port='in1', flipped=False):
         """
         Initialize the Light Sensor Array.
         :param port: Port where the sensor is connected (e.g., 'in1', 'in2').
         """
         self.sound = Sound()
+
+        self.flipped = flipped
+        self.max_value = 100 # Values for CAL are in percentage, RAW seems to be too, but is not documented!
 
         self.port = LegoPort(address=port)
         self.port.mode = 'nxt-i2c'
@@ -98,12 +101,16 @@ class LightArraySensor:
 
         raw_data = struct.unpack(struct_fmt, raw)
 
+        if self.flip_orientation:
+            raw_data = raw_data[::-1]
+
         print("Unpacked sensor data ({}): {}".format(struct_fmt, raw_data))
         return raw_data[:8]  # Discard the last 8 bytes if in CAL mode
 
     def get_line_position(self):
         """
         Calculate the position of the line relative to the sensor based on the current mode.
+        Low values (black) represent the line.
         :return: A float representing the line position (weighted average) or None if invalid data.
         """
         data = self.read_data()
@@ -111,7 +118,7 @@ class LightArraySensor:
             print("Invalid data received. Unable to calculate line position.")
             return None # Propagate the error
 
-        weighted_sum = sum(value * (index + 1) for index, value in enumerate(data))
+        weighted_sum = sum((self.max_value - value) * (index + 1) for index, value in enumerate(data))
         total = sum(data)
         if total == 0:
             return 0.0  # Avoid division by zero
