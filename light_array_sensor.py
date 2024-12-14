@@ -123,12 +123,18 @@ class LightArraySensor:
         # Calculate the inverted data so that low values (black) are weighted more heavily
         inverted_data = [self.max_value - value for value in data]
 
-        weighted_sum = sum(value * (index + 1) for index, value in enumerate(inverted_data))
-        total = sum(inverted_data)
+        biased_data = [value ** 2 for value in inverted_data] # Square the values to increase the contrast
+
+        weighted_sum = sum(value * (index + 1) for index, value in enumerate(biased_data))
+        total = sum(biased_data)
 
         if total == 0:
-            return 0.0  # Avoid division by zero
-        return weighted_sum / total
+            print("No significant line detected.")
+            return None  # No line detected
+
+        line_position = weighted_sum / total
+        print(f"Line detected at position: {line_position:.2f}")
+        return line_position
 
 
 if __name__ == "__main__":
