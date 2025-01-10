@@ -6,6 +6,8 @@ from ev3_motor import EV3Motor
 from pid_controller import PIDController
 from ev3dev2.motor import OUTPUT_A, OUTPUT_B
 import time
+import sys
+import select
 
 class LineFollower:
     def __init__(self):
@@ -18,7 +20,7 @@ class LineFollower:
         self.sensor = LightArraySensor(port='in1', flipped=True)
         self.left_motor = EV3Motor(port=OUTPUT_A, motor_type='large')
         self.right_motor = EV3Motor(port=OUTPUT_B, motor_type='large')
-        self.pid = PIDController(kp=5.0, ki=0.0, kd=5.0, setpoint=4.5, output_limits=(-self.max_speed, self.max_speed))
+        self.pid = PIDController(kp=6.5, ki=0.0, kd=6.5, setpoint=4.5, output_limits=(-self.max_speed, self.max_speed))
 
         self.btn = Button()
         self.display = Display()
@@ -154,6 +156,32 @@ class LineFollower:
         self.manual_calibration()
         self.toggle_debug_mode()
 
+
+    def check_for_command(self):
+        """
+        Check for a command from the SSH terminal to update PID gains or robot speed.
+        """
+        if select.select([sys.stdin], [], [], 0)[0]:
+            user_input = sys.stdin.readline().strip()
+            try:
+                if user_input.startswith("p"):
+                    self.pid.kp = float(user_input[1:])
+                    print("Updated Kp to {}".format(self.pid.kp))
+                elif user_input.startswith("i"):
+                    self.pid.ki = float(user_input[1:])
+                    print("Updated Ki to {}".format(self.pid.ki))
+                elif user_input.startswith("d"):
+                    self.pid.kd = float(user_input[1:])
+                    print("Updated Kd to {}".format(self.pid.kd))
+                elif user_input.startswith("s"):
+                    self.base_speed = float(user_input[1:])
+                    print("Updated base speed to {}".format(self.base_speed))
+                else:
+                    print("Invalid command. Use p, i, d, or s followed by a value.")
+            except ValueError:
+                print("Invalid value. Please enter a numeric value after p, i, d, or s.")
+
+
     def follow_line(self):
         try:
             last_line_position = None
@@ -162,6 +190,7 @@ class LineFollower:
 
             while True:
                 self.handle_button_presses()
+                self.check_for_command()
 
                 sensor_data = self.sensor.read_data()
                 line_position = self.sensor.get_line_position()
