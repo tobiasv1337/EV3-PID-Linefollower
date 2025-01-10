@@ -166,15 +166,14 @@ class LineFollower:
                 sensor_data = self.sensor.read_data()
                 line_position = self.sensor.get_line_position()
 
-                loop_counter += 1
-
-                elapsed_time = time.time() - loop_start_time
-                if elapsed_time >= 1.0:  # Update frequency every second
-                    self.loop_frequency = loop_counter / elapsed_time
-                    loop_start_time = time.time()
-                    loop_counter = 0
-
                 if self.debug_mode:
+                    loop_counter += 1
+                    elapsed_time = time.time() - loop_start_time
+                    if elapsed_time >= 1.0:  # Update frequency every second
+                        self.loop_frequency = loop_counter / elapsed_time
+                        loop_start_time = time.time()
+                        loop_counter = 0
+
                     self.debug_visualization(sensor_data)
 
                 if self.running:
