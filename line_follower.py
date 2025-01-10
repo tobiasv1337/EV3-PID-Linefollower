@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from ev3dev2.button import Button
 from ev3dev2.display import Display
 from ev3dev2.sound import Sound
