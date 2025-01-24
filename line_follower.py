@@ -130,6 +130,8 @@ class LineFollower:
             if self.running:
                 self.sound.speak("Line following enabled")
             else:
+                self.left_motor.stop()
+                self.right_motor.stop()
                 self.sound.speak("Line following disabled")
             time.sleep(0.5)  # Debounce
     
