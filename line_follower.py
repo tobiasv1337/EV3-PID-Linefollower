@@ -22,7 +22,7 @@ class LineFollower:
         self.scaling_factor = 1.0  # Internal variable for scaling motor speeds
 
         # Initialize components
-        self.sensor = LightArraySensor(port='in1', flipped=True)
+        self.sensor = LightArraySensor(port='in1', flipped=False)
         self.left_motor = EV3Motor(port=OUTPUT_A, motor_type='large')
         self.right_motor = EV3Motor(port=OUTPUT_B, motor_type='large')
         self.pid = PIDController(kp=6.5, ki=0.0, kd=6.5, setpoint=4.5, output_limits=(-self.max_speed, self.max_speed))
