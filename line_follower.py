@@ -17,7 +17,7 @@ import select
 class LineFollower:
     def __init__(self):
         # Constants
-        self.base_speed = 10  # Base speed for both motors
+        self.base_speed = 20  # Base speed for both motors
         self.max_speed = 100  # Maximum allowed motor speed
         self.scaling_factor = 1.0  # Internal variable for scaling motor speeds
 
@@ -25,7 +25,7 @@ class LineFollower:
         self.sensor = LightArraySensor(port='in1', flipped=False)
         self.left_motor = EV3Motor(port=OUTPUT_A, motor_type='large')
         self.right_motor = EV3Motor(port=OUTPUT_B, motor_type='large')
-        self.pid = PIDController(kp=6.5, ki=0.0, kd=6.5, setpoint=4.5, output_limits=(-self.max_speed, self.max_speed))
+        self.pid = PIDController(kp=11.0, ki=0.0, kd=3.0, setpoint=4.5, output_limits=(-self.max_speed, self.max_speed))
 
         self.btn = Button()
         self.sound = Sound()
@@ -205,7 +205,9 @@ class LineFollower:
 
             while True:
                 self.handle_button_presses()
-                self.check_for_command()
+
+                if DISPLAY_AVAILABLE:
+                    self.check_for_command()
 
                 sensor_data = self.sensor.read_data()
                 line_position = self.sensor.get_line_position()

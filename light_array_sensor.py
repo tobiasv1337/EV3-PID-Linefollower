@@ -29,8 +29,8 @@ class LightArraySensor:
                 self.sensor.mode = self.mode
                 print("Sensor initialized in RAW mode")
                 break
-            except PermissionError:
-                print("PermissionError during initialization. Retrying...")
+            except OSError as e:
+                print("Failed to initialize the sensor: {}. Retrying...".format(e))
                 time.sleep(1)
 
         if self.sensor is None:
