@@ -1,7 +1,10 @@
-#!/usr/bin/env python3
+try:
+    from ev3dev2.display import Display
+    DISPLAY_AVAILABLE = True
+except ImportError:
+    DISPLAY_AVAILABLE = False
 
 from ev3dev2.button import Button
-from ev3dev2.display import Display
 from ev3dev2.sound import Sound
 from light_array_sensor import LightArraySensor
 from ev3_motor import EV3Motor
@@ -25,15 +28,16 @@ class LineFollower:
         self.pid = PIDController(kp=6.5, ki=0.0, kd=6.5, setpoint=4.5, output_limits=(-self.max_speed, self.max_speed))
 
         self.btn = Button()
-        self.display = Display()
         self.sound = Sound()
+
+        if DISPLAY_AVAILABLE:
+            self.display = Display()
 
         # State variables
         self.running = False
         self.debug_mode = True
 
         self.loop_frequency = 0.0
-
         self.inverted_display = True
 
     def scale_motor_speeds(self, left_speed, right_speed):
@@ -58,6 +62,9 @@ class LineFollower:
         Visualize sensor data and relevant system information on the EV3 display.
         Handles None values and adjusts for RAW/CAL scaling differences.
         """
+        if not DISPLAY_AVAILABLE:
+            return
+
         self.display.clear()
 
         screen_width = 178
@@ -185,6 +192,10 @@ class LineFollower:
 
 
     def follow_line(self):
+        """
+        Core function for line following.
+        Visualization will only be used if display is available.
+        """
         try:
             last_line_position = None
             loop_start_time = time.time()
@@ -197,7 +208,7 @@ class LineFollower:
                 sensor_data = self.sensor.read_data()
                 line_position = self.sensor.get_line_position()
 
-                if self.debug_mode:
+                if self.debug_mode and DISPLAY_AVAILABLE:
                     loop_counter += 1
                     elapsed_time = time.time() - loop_start_time
                     if elapsed_time >= 1.0:  # Update frequency every second
@@ -242,15 +253,17 @@ class LineFollower:
         except KeyboardInterrupt:
             self.left_motor.stop()
             self.right_motor.stop()
-            self.display.clear()
-            self.display.text_pixels("Exiting...", x=0, y=0, text_color='white')
-            self.display.update()
+            if DISPLAY_AVAILABLE:
+                self.display.clear()
+                self.display.text_pixels("Exiting...", x=0, y=0, text_color='white')
+                self.display.update()
             self.sound.speak("Goodbye")
 
 
-if __name__ == "__main__":
+def main():
     follower = LineFollower()
-
-    #follower.sensor.calibrate()
-
     follower.follow_line()
+
+
+if __name__ == "__main__":
+    main()
